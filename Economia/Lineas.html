@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Solicitud Pr&eacute;stamo</title>
+        <link rel="stylesheet" href="css/style2.css"/>
+        <style media="screen">
+          *{
+            font-family: "Homer Simpson", cursive;
+          }
+        </style>
+    </head>
+
+    <body>
+        <form id="form1" name="form1">
+            <center>
+            <img src="logo.png" height="200px" width="260px" /></center>
+            <fieldset>
+                <!--<legend> Linea Pr&eacute;stamo</legend>
+                <li>
+                    <label for="l1">Linea Base</label>
+                    <input type = "radio" name = "linea" id = "l1" value = "linea1" checked = "checked" onClick="parent.cambio.location.href = 'Base.html'" target="cambio" />
+
+                    <label for="l2">Linea Cuota Fija</label>
+                    <input type="radio" name="linea" id="l2" value="linea2" onClick="parent.cambio.location.href = 'Fija.html'" target="cambio" />
+
+                    <label for="l3">Linea con Periodo de Gracia Muerto</label>
+                    <input type="radio" name="linea" id="l3" value="linea3"  onClick="parent.cambio.location.href = 'Gracia.html'" target="cambio"  />
+                </li>-->
+                  <br><br>
+                <center><select id="Opciones" class="form-control" style="width:280px;" onchange="location = this.value">
+                  <option value="">-</option>
+                  <option value="Base.html" target="cambio">Linea Base</option>
+                  <option value="Fija.html"  target="cambio">Linea Cuota Fija</option>
+                  <option value="Gracia.html" target="cambio">Linea Con Perisodo de Gracia Muerto</option>
+                </select></center>
+            </fieldset>
+
+        </form>
+    </body>
+</html>

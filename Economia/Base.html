@@ -1,0 +1,401 @@
+<html >
+    <head>
+        <meta charset="utf-8"/>
+        <title>SIMULADOR DE PRESTAMOS</title>
+        <link rel="stylesheet" href="css/style.css"/>
+        <link rel="stylesheet" href="css/bootstrap.min.css"/>
+        <script src="lib/jquery-1.11.0.min.js"></script>
+        <script src="lib/jspdf.js"></script>
+        <script src="lib/pdfFromHTML.js"></script>
+
+
+        <style>
+            table {
+                border-collapse: collapse;
+            }
+            table, th, td {
+                border: 1px solid black;
+                text-align:center;
+            }
+            h4{
+              color:#ed1c24;
+            }
+            *{
+              font-family: "Homer Simpson", cursive;
+            }
+        </style>
+
+        <script>
+            function soloNumeros() {
+                if (event.keyCode > 47 && event.keyCode < 58 || event.keyCode == 46)
+                    event.returnValue = true;
+                else
+                    event.returnValue = false;
+            }
+            function soloNada() {
+                if (event.keyCode > 8 && event.keyCode < 10)
+                    event.returnValue = true;
+                else
+                    event.returnValue = false;
+
+            }
+            function soloLetras() {
+                if ((event.keyCode < 65 || event.keyCode > 90 && event.keyCode < 97 || event.keyCode > 122) && (event.keyCode != 32))
+                    event.returnValue = false;
+            }
+
+            function convierteInteres() {
+                var ip = document.getElementById("tasaM").value;
+                var mes = 6;
+
+                var tasaN = ip * mes;
+                document.getElementById("tasaN").value = tasaN.toFixed(2);
+                var tasaE = (Math.pow(1 + ip / 100, (360 / 60)) - 1) * 100;
+                document.getElementById("tasaE").value = tasaE.toFixed(2);
+            }
+
+            function convierteNominal() {/*nominal a efectiva y a efectiva mensual*/
+                var tNom = document.getElementById("tasaN").value;
+                //  Nominal a Efectiva
+                var mes = 6;
+                var ip = tNom / mes;
+
+                document.getElementById("tasaM").value = ip.toFixed(2);
+
+                var tEfectiva = (Math.pow(1 + ip / 100, (360 / 60)) - 1) * 100;
+                document.getElementById("tasaE").value = tEfectiva.toFixed(2);
+            }
+
+            function convierteEfectiva() { /* efectiva a nominal y a efeftiva memsual*/
+                var tEfe = document.getElementById("tasaE").value;
+                var mes = 6;
+
+                var ip = (Math.pow(1 + tEfe / 100, (60 / 360)) - 1) * 100;
+                var tasaN = ip * mes;
+                document.getElementById("tasaN").value = tasaN.toFixed(2);
+                document.getElementById("tasaM").value = ip.toFixed(2);
+            }
+
+            function format(input) { /* Esta funcion realiza la separacion de punto en el monto*/
+                var num = input.value.replace(/\./g, '');
+                if (!isNaN(num)) {
+                    num = num.toString().split('').reverse().join('').replace(/(?=\d*\.?)(\d{3})/g, '$1.');
+                    num = num.split('').reverse().join('').replace(/^[\.]/, '');
+                    input.value = num;
+                } else {
+                    alert('Solo se permiten numeros');
+                    input.value = input.value.replace(/[^\d\.]*/g, '');
+                }
+            }
+
+              function Tabla() { /* Funcion se encarga de generar la tabla y verificar que los campos esten completos*/
+                  var tiempo = document.getElementById("tiempo").value;
+                  var TasaE = document.getElementById("tasaE").value;
+                  var TasaM = document.getElementById("tasaM").value;
+                var TasaN = document.getElementById("tasaN").value;
+                var Monto = document.getElementById("monto").value;
+                var Fecha = $("#fecha").val();
+
+                if (tiempo === '') {
+                    alert("Ingrese tiempo para seguir");
+                } else if ((tiempo < 12) || (tiempo > 24)) {
+                    alert("El tiempo debe ser mayor que 12 y menor que 24 meses");
+                }
+
+                if ((TasaE === '') || (TasaM === '') || (TasaN === '')) {
+                    alert("Ingrese Valor a la Tasa de interes");
+                }
+
+                if (Monto === '') {
+                    alert("Ingrese Monto para continuar");
+                }
+
+
+                if ((tiempo >= 12) && (tiempo <= 24) && (TasaE !== '') && (TasaM !== '') && (TasaN !== '') && (Monto !== '')) {
+
+                    document.getElementById("boton").style.visibility = 'hidden';
+                    document.getElementById("marco").style.visibility = 'visible';
+
+                    //Almacena la fecha de hoy
+                    var f =Fecha.split("-");
+
+                    var anio = f[0];
+                    var mes = f[1];
+                    var dia = f[2];
+
+                    //Calcula el monto ya que el ingresado es un String por la separacion de miles
+                    var tmno = Monto.length;
+                    var ciento = Monto.substring((tmno - 3), tmno);
+                    var mil = Monto.substring((tmno - 7), (tmno - 4));
+                    if (mil == '') {
+                        mil = 0;
+                    }
+                    var millon = Monto.substring((tmno - 11), (tmno - 8));
+                    if (millon == '') {
+                        millon = 0;
+                    }
+                    var billon = Monto.substring((tmno - 15), (tmno - 12));
+                    if (billon == '') {
+                        billon = 0;
+                    }
+
+                    var monto_valor = (parseInt(billon) * 1000000000) + (parseInt(millon) * 1000000) + (parseInt(mil) * 1000) + parseInt(ciento);
+
+                    var amotizacion = monto_valor / tiempo;
+
+                    //Se muestra la informacion recopilada
+                    var nombre = document.getElementById("nombres").value;
+                    var apellido = document.getElementById("apellidos").value;
+                    var id = document.getElementById("numDocumento").value;
+
+
+                    document.getElementById("arriba").innerHTML = " \
+                        Linea Estandar\
+                        <li>Nombre: " + nombre + " " + apellido + " \
+            </li><li>Documento: " + id + " \
+            </li><li>Monto: " + Monto + " \
+                        </li><li>Tiempo: " + tiempo + " Meses" + " \
+                        </li><li>Fecha: " + Fecha + "" + " \
+                        </li><li>Efectivo Anual: " + TasaE + " %" + " \
+                        </li><li>Nominal Anual: " + TasaN + " %" + " \
+                        </li><li>Interes Periodico: " + TasaM + " %" + " \
+                        </li>";
+                    salto_Linea = document.createElement("br");
+//Se genera la tabla
+                    tabla = document.createElement("table");
+
+                    for (i = 0; i <= 0; i++) {
+                        tr = document.createElement("tr");
+
+                        tda = document.createElement("td");
+                        tda.innerHTML = "Periodo";
+
+                        tdb = document.createElement("td");
+                        tdb.innerHTML = "Fecha";
+
+                        tdc = document.createElement("td");
+                        tdc.innerHTML = "Capital";
+
+                        tdd = document.createElement("td");
+                        tdd.innerHTML = "Amotizaci&oacute;n";
+
+                        tde = document.createElement("td");
+                        tde.innerHTML = "Interes";
+
+                        tdf = document.createElement("td");
+                        tdf.innerHTML = "Seguro";
+
+                        tdg = document.createElement("td");
+                        tdg.innerHTML = "Caja";
+
+                        tr.appendChild(tda);
+                        tr.appendChild(tdb);
+                        tr.appendChild(tdc);
+                        tr.appendChild(tdd);
+                        tr.appendChild(tde);
+                        tr.appendChild(tdf);
+                        tr.appendChild(tdg);
+                        tabla.appendChild(tr);
+                    }
+
+                    for (i = 0; i <= tiempo; i++) {
+                        tr = document.createElement("tr");
+
+                        td1 = document.createElement("td");
+
+                        td1.innerHTML = i ;
+
+                        td2 = document.createElement("td");
+
+                        if ((mes + i) <= 8) {
+                            td2.innerHTML = dia + "/" + (mes + (i * 2)) + "/" + anio;
+                        } else if (((mes + i) > 8) && ((mes + i) <= 14)) {
+                            td2.innerHTML = dia + "/" + ((mes + (i * 2)) - 12) + "/" + (anio + 1);
+                        } else if (((mes + i) > 14) && ((mes + i) <= 20)) {
+                            td2.innerHTML = dia + "/" + ((mes + (i * 2)) - 24) + "/" + (anio + 2);
+                        } else if (((mes + i) > 20) && ((mes + i) <= 26)) {
+                            td2.innerHTML = dia + "/" + ((mes + (i * 2)) - 36) + "/" + (anio + 3);
+                        } else if (((mes + i) > 26) && ((mes + i) <= 32)) {
+                            td2.innerHTML = dia + "/" + ((mes + (i * 2)) - 48) + "/" + (anio + 4);
+                        } else if (((mes + i) > 32) && ((mes + i) <= 38)) {
+                            td2.innerHTML = dia + "/" + ((mes + (i * 2)) - 60) + "/" + (anio + 5);
+                        }
+
+                        td3 = document.createElement("td");
+                        td3.innerHTML = monto_valor.toFixed(2);
+
+                        td4 = document.createElement("td");
+                        if (i >= 1) {
+                            td4.innerHTML = amotizacion.toFixed(2);
+                        } else {
+                            td4.innerHTML = "-------------";
+                        }
+
+                        td5 = document.createElement("td");
+                        var Interes = (monto_valor + amotizacion) * (TasaM / 100);
+                        if (i >= 1) {
+                            td5.innerHTML = Interes.toFixed(2);
+                        } else {
+                            td5.innerHTML = "-------------";
+                        }
+
+                        td6 = document.createElement("td");
+                        var seguro = (monto_valor * 4) / 1000;
+                        td6.innerHTML = seguro.toFixed(2);
+
+                        td7 = document.createElement("td");
+                        if (i < 1) {
+                            var CuotaFija = monto_valor - seguro;
+                            td7.innerHTML = CuotaFija.toFixed(2);
+                        } else if (i >= 1) {
+                            var CuotaFija = (amotizacion + Interes + seguro) * -1;
+                            td7.innerHTML = CuotaFija.toFixed(2);
+                        }
+                        monto_valor -= amotizacion;
+
+                        tr.appendChild(td1);
+                        tr.appendChild(td2);
+                        tr.appendChild(td3);
+                        tr.appendChild(td4);
+                        tr.appendChild(td5);
+                        tr.appendChild(td6);
+                        tr.appendChild(td7);
+                        tabla.appendChild(tr);
+                    }
+                    document.getElementById("titulo").appendChild(tabla);
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <form>
+            <center><h1 style="font-size:30px; font-style:bold; color:#ed1c24;"> L&iacute;nea Base</h1></center><br><br></br>
+            <fieldset>
+
+                <fieldset>
+                    <center><h4>Datos Basicos del Solicitante</h4></center>
+                    <ul>
+                        <li>
+                            <label for="documento">Tipo Documento</label>
+                            <select name="documento"  class="form-control" id="documento" required="required" >
+                                <option  value="CC">Cedula Ciudadania</option>
+                                <option value="Pas">Pasaporte</option>
+                                <option value="CE">Cedula Extranjeria</option>
+                            </select>
+                        </li>
+
+                        <li>
+                            <label for="numDocumento">Numero Documento</label>
+                            <input type="text" name="numDocumento" id="numDocumento" class="form-control" placeholder="N&uacute;mero Documento" required="required" onKeyPress="soloNumeros()" onkeyup="format(this)"/>
+                        </li>
+
+                        <li>
+                            <label for="apellidos">Apellidos</label>
+                            <input type="text" name="apellidos" id="apellidos" class="form-control" placeholder="Apellidos" required="required" onKeyPress="soloLetras()"/>
+                        </li>
+
+                        <li>
+                            <label for="nombres">Nombres</label>
+                            <input type="text" name="nombres" id="nombres" class="form-control" placeholder="Nombres" required="required" onKeyPress="soloLetras()"/>
+                        </li>
+						<li>
+                            <label for="fecha">Fecha</label>
+                            <input type="date" name="fecha" id="fecha" class="form-control" required="required"/>
+                        </li>
+                    </ul>
+                    <br><br><br>
+                </fieldset>
+
+                <fieldset>
+                    <center><h4>Informaci&oacute;n del Prestamo</h4><center>
+                    <ul>
+                        <!--  <li>
+                           <label for="nacimiento">Fecha Solicitud Prestamo</label>
+                           <input type="text" name="fecha"  id="fecha" onKeyPress="soloNada()" />
+
+                          </li>  -->
+
+                        <li>
+                            <label for="monto">Monto del Prestamo</label>
+                            <input type="text" name="monto" id="monto" class="form-control" placeholder="monto" required="required" onkeyup="format(this)" onchange="format(this)"/>
+                        </li>
+                        <br><br><br>
+                        <fieldset>
+                            <center><h4>Periodicidad</h4></center>
+                            <li>
+                                <label for="l1">Bimestral</label>
+                                <input type = "radio" name = "periodo" id = "l1" value = "60" checked = "checked" onchange="convierteNominal()"/>
+                                <!-- <label for="l2">Bimestral</label>
+                                 <input type="radio" name="periodo" id="l2" value="60"  onchange="convierteNominal()"/>
+                                 <label for="l3">Trimestral</label>
+                                 <input type="radio" name="periodo" id="l3" value="90"  onchange="convierteNominal()"/>
+                                 <label for="l3">Semestral</label>
+                                 <input type="radio" name="periodo" id="l4" value="180"  onchange="convierteNominal()"/>  -->
+                        </fieldset>
+                        <br><br>
+                        <li>
+                            <label for="cuota">Tiempo del Credito</label>
+
+
+
+                            <select  class="form-control" name="tiempo" id="tiempo" required="required" style="width:200px;" required="required">
+                                <option value="">-</option>
+                                <option value="12">12 meses</option>
+                                <option value="14">14 meses</option>
+                                <option value="16">16 meses</option>
+                                <option value="18">18 meses</option>
+                                <option value="20">20 meses</option>
+                                <option value="22">22 meses</option>
+                                <option value="24">24 meses</option>
+
+                            </select>
+                            <br><br>
+
+
+                        </li>
+                        <br><br><br>
+                        <fieldset>
+                            <center><h4>Tasa</h4></center>
+
+                            <li>
+                                <label for="tasa">Efectiva anual</label>
+                                <input type="text" name="tasaE"  class="form-control" id="tasaE" placeholder="Tasa" required="required" onchange="convierteEfectiva()" />
+                            </li>
+
+                            <li>
+                                <label for="tasa">Nominal anual</label>
+                                <input type="text" name="tasaN" class="form-control" id="tasaN" placeholder="Tasa" required="required" onchange="convierteNominal()"/>
+                            </li>
+
+                            <li>
+                                <label for="tasa">Interes Periodico</label>
+                                <input type="text" name="tasaM" class="form-control" id="tasaM" placeholder="Tasa" required="required" onchange="convierteInteres()"/>
+                            </li>
+
+                    </ul>
+                </fieldset>
+                <br><br><br><br>
+                <!-- <label for="monto">DTF</label>
+                   <input type="text" name="dtf" id="dtf" placeholder="valor DTF" onKeyPress="soloNumeros()" required="required" />
+
+                  <label for="monto">Puntos adicionales</label>
+                  <input type="text" name="puntos" id="puntos" placeholder="puntos" onKeyPress="soloNumeros()" onchange="NuevaEfectiva()"required="required" />  -->
+                <center><input type="button" name="validar" class="btn btn-danger" id="boton" value="Calcular Pr&eacute;stamo " onclick="Tabla()"/></center>
+            </fieldset>
+            </fieldset>
+            <br/>
+
+            <fieldset style="visibility:hidden" id="marco">
+                <h3 style="color:#ed1c24;">Informaci&oacute;n Recopilada</h3>
+                <br><br>
+                <div id="pdf2htmldiv">
+                    <p id="arriba"></p>
+
+                    <p id="titulo"></p>
+                </div>
+                  <center><input type="button" class="btn btn-success" id="imprimir" value="PDF" onClick="location.href = 'javascript:pdfToHTML()'" /></center>
+            </fieldset>
+        </form>
+    </body>
+</html>
